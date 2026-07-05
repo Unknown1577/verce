@@ -475,15 +475,31 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://unknown1577.github.io/verce/tonconnect-manifest.json"
 });
 
+const walletBanner = document.getElementById("wallet-banner");
+
+function hideBanner() {
+  walletBanner.style.display = "none";
+}
+
+function showBanner() {
+  walletBanner.style.display = "flex";
+}
+
+/* 🔥 ВАЖНО: теперь после функций */
+tonConnectUI.onStatusChange((wallet) => {
+  if (wallet) {
+    hideBanner();
+  } else {
+    showBanner();
+  }
+});
+
 async function pay() {
   try {
-
-    // подключение кошелька если не подключен
     if (!tonConnectUI.connected) {
       await tonConnectUI.connectWallet();
     }
 
-    // транзакция
     const tx = {
       validUntil: Math.floor(Date.now() / 1000) + 600,
       messages: [
@@ -502,11 +518,15 @@ async function pay() {
 }
 
 document.getElementById("connect-wallet").addEventListener("click", async () => {
-    try {
-        await pay(); // открывает Telegram Pay / Wallet
-    } catch (e) {
-        console.error(e);
+  hideBanner();
+
+  try {
+    await pay();
+  } finally {
+    if (!tonConnectUI.connected) {
+      showBanner();
     }
+  }
 });
 </script>
 
