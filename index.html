@@ -2,9 +2,10 @@
 <html lang="ru">
 
 <head>
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -240,6 +241,82 @@ button{
   pointer-events:none;
 }
 
+.banner{
+  width:380px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(10,12,18,0.65);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(0,180,255,0.15);
+  box-shadow:0 0 22px rgba(0,150,255,0.10);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#fff;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.diamond{
+  width:30px;
+  height:30px;
+}
+
+.text{
+  display:flex;
+  flex-direction:column;
+}
+
+.title{
+  font-size:11px;
+  color:#7cc7ff;
+  font-weight:800;
+}
+
+.sub{
+  font-size:12px;
+  color:#aab3c2;
+}
+
+.price{
+  font-size:12px;
+  font-weight:900;
+  color:#00d4ff;
+}
+
+.price span{
+  color:#fff;
+}
+
+.btn{
+  padding:10px 12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#0077ff,#00d4ff);
+  color:#fff;
+  font-weight:900;
+}
+
+#wallet-banner .btn{
+  -webkit-text-fill-color: #fff !important;
+  color: #fff !important;
+  background: linear-gradient(90deg,#0077ff,#00d4ff);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 100001;
+}
+
+#wallet-banner .btn{
+  transform: translateY(-8px);
+}
+
 </style>
 </head>
 
@@ -260,29 +337,12 @@ button{
     <div class="logo">AVA EDGE</div>
     <div class="sub">INITIALIZING SYSTEM</div>
 
-    <div id="loading-screen">
-  <div class="center">
-    <div class="logo">AVA EDGE</div>
-    <div class="sub">INITIALIZING SYSTEM</div>
-
     <div class="loader">
       <div class="percent" id="percent">0%</div>
       <div class="bar"><div class="progress" id="progress"></div></div>
-
       <button id="subscribe">Подписаться</button>
     </div>
-
   </div>
-</div>
-
-<!-- ВАЖНО: ЭТО СНАРУЖИ -->
-<div class="game-container">
-  <iframe src="https://gamaverse.com/c/f/g/hazmob-fps-online-shooter-1777292074/"></iframe>
-</div>
-
-<div id="rotate-screen">
-  <div class="phone"><div class="phone-inner"></div></div>
-  <div class="rotate-text">Поверните устройство</div>
 </div>
 
 <!-- GAME -->
@@ -299,7 +359,37 @@ button{
   </div>
 </div>
 
+<div class="banner" id="wallet-banner" style="display:none; position:fixed; top:160px; left:50%; transform:translateX(-50%); z-index:100000;">
+
+  <div class="left">
+
+    <svg class="diamond" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="dia" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="35%" stop-color="#7fe7ff"/>
+          <stop offset="70%" stop-color="#00b7ff"/>
+          <stop offset="100%" stop-color="#0077ff"/>
+        </linearGradient>
+      </defs>
+
+      <path fill="url(#dia)" d="M32 4 L52 22 L32 60 L12 22 Z"/>
+    </svg>
+
+    <div class="text">
+      <div class="title">AVA SYSTEM</div>
+      <div class="sub">Бессрочная подписка</div>
+      <div class="price">ОПЛАТА — <span>0.3 GRAM</span></div>
+    </div>
+
+  </div>
+
+  <button class="btn" id="connect-wallet">Connect Wallet</button>
+
+</div>
+
 <script>
+
 const DURATION = 120000;
 const start = Date.now();
 
@@ -313,36 +403,38 @@ const rightBar = document.getElementById("rightBar");
 const rotateScreen = document.getElementById("rotate-screen");
 const gameContainer = document.querySelector(".game-container");
 
+/* 🔥 БЛОКИРОВКА ДО ГОТОВНОСТИ */
 let gameReady = false;
 
 gameContainer.style.display = "none";
 
 /* SUBSCRIBE */
-const subBtn = document.getElementById("subscribe");
-if (subBtn) {
-  subBtn.onclick = () =>
-    window.open("https://t.me/crocodile_y8", "_blank");
-}
+document.getElementById("subscribe").onclick =
+  () => window.open("https://t.me/crocodile_y8", "_blank");
 
 /* ORIENTATION */
 function checkOrientation(){
+
   if (!gameReady) return;
 
   if(window.innerWidth > window.innerHeight){
     rotateScreen.style.display = "none";
     gameContainer.style.display = "block";
+   document.getElementById("wallet-banner").style.display = "flex";
     leftBar.classList.add("show");
     rightBar.classList.add("show");
   } else {
     rotateScreen.style.display = "flex";
     gameContainer.style.display = "none";
+    document.getElementById("wallet-banner").style.display = "none";
   }
 }
 
+window.addEventListener("orientationchange", ()=>{
+  setTimeout(checkOrientation, 300);
+});
+
 window.addEventListener("resize", checkOrientation);
-window.addEventListener("orientationchange", () =>
-  setTimeout(checkOrientation, 300)
-);
 
 /* LOADER */
 function loop(){
@@ -357,38 +449,59 @@ function loop(){
   } else {
     text.textContent = "READY";
 
-    setTimeout(() => {
+    setTimeout(()=>{
       screen.classList.add("hide");
 
-      setTimeout(() => {
+      setTimeout(()=>{
         screen.style.display = "none";
+
         gameReady = true;
         checkOrientation();
-      }, 500);
 
-    }, 400);
+      },500);
+
+    },400);
   }
 }
 
 loop();
+
 </script>
+
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <script>
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://unknown1577.github.io/verce/tonconnect-manifest.json"
 });
 
-document.getElementById("connect-wallet").addEventListener("click", async () => {
-  const tx = {
-    validUntil: Math.floor(Date.now() / 1000) + 600,
-    messages: [{
-      address: "UQDys2byCZacKMxyKKmr4nKiC_Ll_YDX6DIuiOSagP9vcn-m",
-      amount: (0.3 * 1e9).toString()
-    }]
-  };
+async function pay() {
+  try {
 
-  await tonConnectUI.sendTransaction(tx);
-});
+    // подключение кошелька если не подключен
+    if (!tonConnectUI.connected) {
+      await tonConnectUI.connectWallet();
+    }
+
+    // транзакция
+    const tx = {
+      validUntil: Math.floor(Date.now() / 1000) + 600,
+      messages: [
+        {
+          address: "UQDys2byCZacKMxyKKmr4nKiC_Ll_YDX6DIuiOSagP9vcn-m",
+          amount: (0.3 * 1e9).toString()
+        }
+      ]
+    };
+
+    await tonConnectUI.sendTransaction(tx);
+
+  } catch (e) {
+    console.log("Payment error:", e);
+  }
+}
+
+document.getElementById("connect-wallet").addEventListener("click", pay);
 </script>
 
 </body>
