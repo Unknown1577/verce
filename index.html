@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -384,7 +385,7 @@ button{
 
   </div>
 
-  <button class="btn">Connect Wallet</button>
+  <button class="btn" id="connect-wallet">Connect Wallet</button>
 
 </div>
 
@@ -465,6 +466,27 @@ function loop(){
 }
 
 loop();
+
+<script>
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+  manifestUrl: "https://unknown1577.github.io/verce/tonconnect-manifest.json",});
+
+async function pay() {
+  const tx = {
+    validUntil: Math.floor(Date.now() / 1000) + 600,
+    messages: [
+      {
+        address: "UQDys2byCZacKMxyKKmr4nKiC_Ll_YDX6DIuiOSagP9vcn-m",
+        amount: (0.3 * 1e9).toString()
+      }
+    ]
+  };
+
+  await tonConnectUI.sendTransaction(tx);
+}
+
+document.getElementById("connect-wallet").addEventListener("click", pay);
+</script>
 
 </script>
 
