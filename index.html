@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+
+<title>Game Loader</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+}
+
+body,html{
+  height:100%;
+  overflow:hidden;
+  background:#000;
+}
+
+/* ================= SIDE PANELS ================= */
+
+.side-bar{
+  position:fixed;
+  top:0;
+  width:115px;
+  height:100%;
+  background:#000;
+  z-index:10000;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(var(--dir));
+}
+
+.side-bar.show{
+  animation:slideIn .7s ease forwards;
+}
+
+@keyframes slideIn{
+  from{opacity:0; transform:translateX(var(--dir));}
+  to{opacity:1; transform:translateX(0);}
+}
+
+.side-left{ left:0; --dir:-120px; }
+.side-right{ right:0; --dir:120px; }
+
+.side-text{
+  display:flex;
+  flex-direction:column;
+  font-size:14px;
+  font-weight:900;
+  line-height:1.1;
+  text-align:center;
+  letter-spacing:1px;
+}
+
+.side-text div{
+  background:linear-gradient(120deg,#777,#fff,#aaa,#fff,#777);
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shine 2.2s linear infinite;
+}
+
+/* ================= LOADING ================= */
+
+#loading-screen{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999;
+  background:#111;
+  transition:opacity .5s ease;
+}
+
+.center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  transform:translateY(-20px);
+}
+
+.logo{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:0px;
+  background:linear-gradient(120deg,#777,#fff,#aaa,#fff,#777);
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shine 2.2s linear infinite;
+}
+
+@keyframes shine{
+  0%{background-position:0%}
+  100%{background-position:200%}
+}
+
+.sub{
+  font-size:12px;
+  letter-spacing:2px;
+  color:#666;
+}
+
+.loader{
+  width:80%;
+  max-width:320px;
+  position:relative;
+}
+
+.bar{
+  width:100%;
+  height:6px;
+  background:#1a1a1a;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.progress{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,#fff,#888,#fff);
+  background-size:200% 100%;
+  animation:move 1.5s linear infinite;
+}
+
+@keyframes move{
+  0%{background-position:0 0}
+  100%{background-position:200% 0}
+}
+
+.percent{
+  position:absolute;
+  top:-13px;
+  left:50%;
+  transform:translateX(-50%);
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+}
+
+/* ================= BUTTON ================= */
+
+button{
+  display:block;
+  margin:18px auto 0 auto;
+  padding:12px 22px;
+  border:2px solid #fff;
+  border-radius:30px;
+  background:#1a1a1a;
+
+  background:linear-gradient(120deg,#777,#fff,#aaa,#fff,#777);
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shine 2.2s linear infinite;
+
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* ================= GAME ================= */
+
+.game-container{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  display:none;
+}
+
+.game-container iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+/* ================= ROTATE SCREEN ================= */
+
+#rotate-screen{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:99999;
+
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:30px;
+}
+
+.phone{
+  width:90px;
+  height:160px;
+  border:4px solid #fff;
+  border-radius:18px;
+  position:relative;
+  animation:rotatePhone 2s ease-in-out infinite;
+}
+
+.phone-inner{
+  position:absolute;
+  inset:10px;
+  border:2px solid rgba(255,255,255,.3);
+  border-radius:10px;
+}
+
+@keyframes rotatePhone{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(90deg);}
+}
+
+.rotate-text{
+  color:#fff;
+  text-align:center;
+  font-size:22px;
+  font-weight:900;
+}
+
+.hide{
+  opacity:0;
+  pointer-events:none;
+}
+
+.banner{
+  width:380px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(10,12,18,0.65);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(0,180,255,0.15);
+  box-shadow:0 0 22px rgba(0,150,255,0.10);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#fff;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.diamond{
+  width:30px;
+  height:30px;
+}
+
+.text{
+  display:flex;
+  flex-direction:column;
+}
+
+.title{
+  font-size:11px;
+  color:#7cc7ff;
+  font-weight:800;
+}
+
+.sub{
+  font-size:12px;
+  color:#aab3c2;
+}
+
+.price{
+  font-size:12px;
+  font-weight:900;
+  color:#00d4ff;
+}
+
+.price span{
+  color:#fff;
+}
+
+.btn{
+  padding:10px 12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#0077ff,#00d4ff);
+  color:#fff;
+  font-weight:900;
+}
+
+#wallet-banner .btn{
+  -webkit-text-fill-color: #fff !important;
+  color: #fff !important;
+  background: linear-gradient(90deg,#0077ff,#00d4ff);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 100001;
+}
+
+#wallet-banner .btn{
+  transform: translateY(-8px);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SIDE BARS -->
+<div class="side-bar side-left" id="leftBar">
+  <div class="side-text"><div>A</div><div>V</div><div>A</div><div> </div><div>E</div><div>D</div><div>G</div><div>E</div><div>👾</div><div> </div></div>
+</div>
+
+<div class="side-bar side-right" id="rightBar">
+  <div class="side-text"><div>A</div><div>V</div><div>A</div><div> </div><div>E</div><div>D</div><div>G</div><div>E</div><div>👾</div><div> </div></div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="center">
+    <div class="logo">AVA EDGE</div>
+    <div class="sub">INITIALIZING SYSTEM</div>
+
+    <div class="loader">
+      <div class="percent" id="percent">0%</div>
+      <div class="bar"><div class="progress" id="progress"></div></div>
+      <button id="subscribe">Подписаться</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="game-container">
+  <iframe src="https://gamaverse.com/c/f/g/hazmob-fps-online-shooter-1777292074/"></iframe>
+</div>
+
+<!-- ROTATE -->
+<div id="rotate-screen">
+  <div class="phone"><div class="phone-inner"></div></div>
+  <div class="rotate-text">
+    Поверните устройство<br>
+    в горизонтальное положение
+  </div>
+</div>
+
+<div class="banner" id="wallet-banner" style="display:none; position:fixed; top:160px; left:50%; transform:translateX(-50%); z-index:100000;">
+
+  <div class="left">
+
+    <svg class="diamond" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="dia" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="35%" stop-color="#7fe7ff"/>
+          <stop offset="70%" stop-color="#00b7ff"/>
+          <stop offset="100%" stop-color="#0077ff"/>
+        </linearGradient>
+      </defs>
+
+      <path fill="url(#dia)" d="M32 4 L52 22 L32 60 L12 22 Z"/>
+    </svg>
+
+    <div class="text">
+      <div class="title">AVA SYSTEM</div>
+      <div class="sub">Бессрочная подписка</div>
+      <div class="price">ОПЛАТА — <span>0.3 GRAM</span></div>
+    </div>
+
+  </div>
+
+  <button class="btn">Connect Wallet</button>
+
+</div>
+
+<script>
+
+const DURATION = 120000;
+const start = Date.now();
+
+const bar = document.getElementById("progress");
+const text = document.getElementById("percent");
+const screen = document.getElementById("loading-screen");
+
+const leftBar = document.getElementById("leftBar");
+const rightBar = document.getElementById("rightBar");
+
+const rotateScreen = document.getElementById("rotate-screen");
+const gameContainer = document.querySelector(".game-container");
+
+/* 🔥 БЛОКИРОВКА ДО ГОТОВНОСТИ */
+let gameReady = false;
+
+gameContainer.style.display = "none";
+
+/* SUBSCRIBE */
+document.getElementById("subscribe").onclick =
+  () => window.open("https://t.me/crocodile_y8", "_blank");
+
+/* ORIENTATION */
+function checkOrientation(){
+
+  if (!gameReady) return;
+
+  if(window.innerWidth > window.innerHeight){
+    rotateScreen.style.display = "none";
+    gameContainer.style.display = "block";
+   document.getElementById("wallet-banner").style.display = "flex";
+    leftBar.classList.add("show");
+    rightBar.classList.add("show");
+  } else {
+    rotateScreen.style.display = "flex";
+    gameContainer.style.display = "none";
+    document.getElementById("wallet-banner").style.display = "none";
+  }
+}
+
+window.addEventListener("orientationchange", ()=>{
+  setTimeout(checkOrientation, 300);
+});
+
+window.addEventListener("resize", checkOrientation);
+
+/* LOADER */
+function loop(){
+  let p = ((Date.now() - start) / DURATION) * 100;
+  if (p > 100) p = 100;
+
+  bar.style.width = p + "%";
+  text.textContent = Math.floor(p) + "%";
+
+  if (p < 100){
+    requestAnimationFrame(loop);
+  } else {
+    text.textContent = "READY";
+
+    setTimeout(()=>{
+      screen.classList.add("hide");
+
+      setTimeout(()=>{
+        screen.style.display = "none";
+
+        gameReady = true;
+        checkOrientation();
+
+      },500);
+
+    },400);
+  }
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
