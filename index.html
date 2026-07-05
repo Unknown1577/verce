@@ -501,7 +501,13 @@ async function pay() {
   }
 }
 
-document.getElementById("connect-wallet").addEventListener("click", pay);
+document.getElementById("connect-wallet").addEventListener("click", async () => {
+    try {
+        await pay(); // открывает Telegram Pay / Wallet
+    } catch (e) {
+        console.error(e);
+    }
+});
 </script>
 
 </body>
