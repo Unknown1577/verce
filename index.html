@@ -478,17 +478,6 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
 const PAID_KEY = "ava_paid";
 const walletBanner = document.getElementById("wallet-banner");
 
-function setPaid() {
-  localStorage.setItem(PAID_KEY, "true");
-  walletBanner.style.display = "none";
-}
-
-if (localStorage.getItem(PAID_KEY) === "true") {
-  walletBanner.style.display = "none";
-}
-
-const walletBanner = document.getElementById("wallet-banner");
-
 function hideBanner() {
   walletBanner.style.display = "none";
 }
@@ -497,10 +486,26 @@ function showBanner() {
   walletBanner.style.display = "flex";
 }
 
+function setPaid() {
+  localStorage.setItem(PAID_KEY, "true");
+  hideBanner();
+}
+
+if (localStorage.getItem(PAID_KEY) === "true") {
+  walletBanner.style.display = "none";
+}
+
 /* 🔥 ВАЖНО: теперь после функций */
 tonConnectUI.onStatusChange((wallet) => {
-  if (wallet) {
+  const paid = localStorage.getItem(PAID_KEY);
+
+  if (paid === "true") {
     hideBanner();
+    return;
+  }
+
+  if (wallet) {
+    showBanner();
   } else {
     showBanner();
   }
@@ -522,19 +527,21 @@ async function pay() {
       ]
     };
 
-    await tonConnectUI.sendTransaction(tx);
+    const result = await tonConnectUI.sendTransaction(tx);
 
-    // ✅ ОПЛАТА УСПЕШНА
-    setPaid();
+    if (result) {
+      setPaid();
+      hideBanner();
+    } else {
+      showBanner();
+    }
 
   } catch (e) {
     console.log("Payment error:", e);
+    showBanner(); // важно вернуть баннер
   }
 }
 
-document.getElementById("connect-wallet").addEventListener("click", async () => {
-  await pay();
-});
 </script>
 
 </body>
