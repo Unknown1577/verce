@@ -2,6 +2,7 @@
 <html lang="ru">
 
 <head>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
@@ -475,7 +476,25 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://unknown1577.github.io/verce/tonconnect-manifest.json"
 });
 
-const PAID_KEY = "ava_paid";
+const tg = window.Telegram?.WebApp;
+
+function savePaid() {
+  if (!tg?.CloudStorage) return;
+  tg.CloudStorage.setItem("ava_paid", "true");
+}
+
+function getPaid(callback) {
+  if (!tg?.CloudStorage) {
+    callback(false);
+    return;
+  }
+
+  tg.CloudStorage.getItem("ava_paid", (err, value) => {
+    if (err || !value) callback(false);
+    else callback(value === "true");
+  });
+}
+
 const walletBanner = document.getElementById("wallet-banner");
 
 function hideBanner() {
@@ -486,26 +505,10 @@ function showBanner() {
   walletBanner.style.display = "flex";
 }
 
-function setPaid() {
-  localStorage.setItem(PAID_KEY, "true");
-  hideBanner();
-}
-
-if (localStorage.getItem(PAID_KEY) === "true") {
-  walletBanner.style.display = "none";
-}
-
 /* 🔥 ВАЖНО: теперь после функций */
 tonConnectUI.onStatusChange((wallet) => {
-  const paid = localStorage.getItem(PAID_KEY);
-
-  if (paid === "true") {
-    hideBanner();
-    return;
-  }
-
   if (wallet) {
-    showBanner();
+    hideBanner();
   } else {
     showBanner();
   }
@@ -527,21 +530,24 @@ async function pay() {
       ]
     };
 
-    const result = await tonConnectUI.sendTransaction(tx);
-
-    if (result) {
-      setPaid();
-      hideBanner();
-    } else {
-      showBanner();
-    }
+    await tonConnectUI.sendTransaction(tx);
 
   } catch (e) {
     console.log("Payment error:", e);
-    showBanner(); // важно вернуть баннер
   }
 }
 
+document.getElementById("connect-wallet").addEventListener("click", async () => {
+  hideBanner();
+
+  try {
+    await pay();
+  } finally {
+    if (!tonConnectUI.connected) {
+      showBanner();
+    }
+  }
+});
 </script>
 
 </body>
